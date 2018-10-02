@@ -22,7 +22,7 @@ namespace cfs::hal
 	     {
                  return m_fileDescriptor;
 	     }
-
+             bool isInUse() const;
 	 private:
 
              std::int32_t m_fileDescriptor;

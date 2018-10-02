@@ -18,8 +18,14 @@ FileDescriptor::FileDescriptor(FileDescriptor && rhs)
 
 FileDescriptor::~FileDescriptor()
 {
-    if(m_fileDescriptor >= 0)
+    if((m_fileDescriptor >= 0) && (::fcntl(m_fileDescriptor, F_GETFD) != -1 || errno != EBADF))
     {
-        close(m_fileDescriptor)
+        ::close(m_fileDescriptor)
     }
 }
+
+bool FileDescriptor::isInUse() const
+{
+    return (::fcntl(m_fileDescriptor, F_GETFD) != -1 || errno != EBADF);
+}
+
