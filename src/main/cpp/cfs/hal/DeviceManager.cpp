@@ -1,11 +1,14 @@
 
+
 #include <cfs/hal/DeviceManager.hpp>
 
-DeviceManager::DeviceManager() 
+using namespace cfs::hal;
+
+DeviceManager::DeviceManager()
 {
 }
 
-DeviceManager::~DeviceManager() 
+DeviceManager::~DeviceManager()
 {
 }
 

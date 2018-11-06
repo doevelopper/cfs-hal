@@ -1,31 +1,73 @@
 
+
+#include <cerrno>
+#include <fcntl.h>
+#include <utility>
+
 #include <cfs/hal/FileDescriptor.hpp>
 
+using namespace cfs::hal;
+
+
 FileDescriptor::FileDescriptor(std::int32_t fd)
-  :  m_fileDescriptor(fd)
+    :  m_fileDescriptor(fd)
 {
     if(m_fileDescriptor < 0)
     {
-         // throw bad fd	
+        // throw bad fd
     }
 }
 
 FileDescriptor::FileDescriptor(FileDescriptor && rhs)
     : m_fileDescriptor(rhs.m_fileDescriptor)
 {
-    //rhs.m_fileDescriptor = -1
+    rhs.m_fileDescriptor = -1;
 }
 
 FileDescriptor::~FileDescriptor()
 {
     if((m_fileDescriptor >= 0) && (::fcntl(m_fileDescriptor, F_GETFD) != -1 || errno != EBADF))
     {
-        ::close(m_fileDescriptor)
+        ::close(m_fileDescriptor);
     }
 }
 
 bool FileDescriptor::isInUse() const
 {
     return (::fcntl(m_fileDescriptor, F_GETFD) != -1 || errno != EBADF);
+}
+
+FileDescriptor & FileDescriptor::operator = (FileDescriptor && rhs)
+{
+    std::swap(m_fileDescriptor, rhs.m_fileDescriptor);
+
+    return (*this);
+}
+
+std::int32_t FileDescriptor::fileDescriptorOperations(std::int32_t command)
+{
+    std::int32_t result = ::fcntl(m_fileDescriptor, command);
+    //if (result < 0)
+    //throw std::system_error(e, std::system_category(), what);
+
+    return result;
+}
+
+std::int32_t FileDescriptor::fileDescriptorOperations(std::int32_t command, std::uint8_t arguments)
+{
+    std::int32_t result = ::fcntl(m_fileDescriptor, command, arguments);
+    //    if (result < 0)
+    //throw std::system_error(e, std::system_category(), what);
+
+    return result;
+}
+
+std::int32_t FileDescriptor::fileDescriptorOperations(std::int32_t command, struct flock * fileLocking)
+{
+    std::int32_t result = ::fcntl(m_fileDescriptor, command, fileLocking);
+    //if (result < 0)
+    //throw std::system_error(e, std::system_category(), what);
+
+    return result;
 }
 

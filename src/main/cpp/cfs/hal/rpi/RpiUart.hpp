@@ -1,17 +1,18 @@
 
+
 #ifndef CFS_HAL_RPI_RPI_UART_HPP
 #define CFS_HAL_RPI_RPI_UART_HPP
 
 #include <cfs/hal/Uart.hpp>
 #include <cfs/hal/FileDescriptor.hpp>
 
-namespace cfs::hal
+namespace cfs::hal::rpi
 {
-    namespace ::rpi
+    class RpiUART final : public Uart
+        , public FileDescriptor
     {
-        class RpiUART final : public Uart, public FileDescriptor
-        {
         public:
+
             RpiUART () = delete;
             RpiUART (const std::string & device, const SerialConfig & config);
             RpiUART (const Uart& orig) = delete;
@@ -23,13 +24,11 @@ namespace cfs::hal
             void setRts(int level);
             std::vector<std::uint8_t> receive(int size);
             void send(const std::vector<std::uint8_t> &buffer);
+    };
 
-        };
-    }
-
-    std::unique_ptr<::Uart> openSerialPort(const std::string& device, const SerialConfig& config) 
+    std::unique_ptr<::Uart> openSerialPort(const std::string& device, const SerialConfig& config)
     {
-      return std::unique_ptr<Uart>(new RpiUART(device, config));
+        return std::unique_ptr<Uart>(new RpiUART(device, config));
     }
 }
 #endif
