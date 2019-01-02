@@ -23,18 +23,24 @@
 
 
 add_library(cfs.hal.main
+    cfs/hal/ImplCheck.hpp
+    cfs/hal/NonCopyable
+    cfs/hal/PeripheralRefCounter
     cfs/hal/FileDescriptor
     cfs/hal/CharacterDevice
     cfs/hal/DeviceManager
-    cfs/hal/GPIO
-    cfs/hal/private/UartPrivate
-#    cfs/hal/Uart
+#    cfs/hal/GPIO
+#    cfs/hal/private/UartPrivate
+    cfs/hal/network/serial/Uart
+    cfs/hal/network/Socket
 #    cfs/hal/Spi
 #    cfs/hal/I2c
 #    cfs/hal/SysFsGPIO
 
     cfs/hal/devices/Hmc5883l
     cfs/hal/devices/UbloxNeoM8NGps
+
+    cfs/hal/rpi/RpiUart
 )
  
 apply_style_targets_command (cfs.hal.main ${CMAKE_CURRENT_SOURCE_DIR})

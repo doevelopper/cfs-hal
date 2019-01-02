@@ -2,16 +2,19 @@
 
 #include <cfs/hal/rpi/RpiUart.hpp>
 
-cfs::hal::rpi::RpiUart::RpiUart()
+using namespace cfs::hal::rpi;
+
+/*RpiUART::RpiUART()
+   {
+   }
+ */
+RpiUART::~RpiUART()
 {
 }
 
-cfs::hal::rpi::RpiUart::~RpiUart()
-{
-}
-
-void cfs::hal::rpi::RpiUart::setRts(int level)
-{
+/*
+   void cfs::hal::rpi::RpiUART::setRts(int level)
+   {
     int status = TIOCM_RTS;
     if (level)
     {
@@ -28,11 +31,11 @@ void cfs::hal::rpi::RpiUart::setRts(int level)
             // Eroro while turning off RTS
         }
     }
-}
+   }
 
-cfs::hal::rpi::RpiUart::RpiUART (const std::string & device, const SerialConfig & config)
+   cfs::hal::rpi::RpiUART::RpiUART (const std::string & device, const SerialConfig & config)
     :  FileDescriptor(::open(device.c_str(), O_RDWR | O_NOCTTY))
-{
+   {
     termios options = {0};
 
     if (tcgetattr(FileDescriptor::operator(), &options) < 0)
@@ -83,10 +86,10 @@ cfs::hal::rpi::RpiUart::RpiUART (const std::string & device, const SerialConfig 
     if (tcsetattr(FileDescriptor::operator(), TCSANOW, &options) < 0)
     {
     }
-}
+   }
 
-cfs::hal::rpi::RpiUART::receive(int size)
-{
+   cfs::hal::rpi::RpiUART::receive(int size)
+   {
     int actualSize = 0;
     std::vector<std::uint8_t> data(size);
 
@@ -125,11 +128,11 @@ cfs::hal::rpi::RpiUART::receive(int size)
     }
 
     return data;
-}
+   }
 
 
-cfs::hal::rpi::RpiUART::send(const std::vector<uint8_t> &buffer)
-{
+   cfs::hal::rpi::RpiUART::send(const std::vector<uint8_t> &buffer)
+   {
     auto res = write(FileDescriptor::operator(), buffer.data(), buffer.size());
 
     if (res < 0)
@@ -143,5 +146,6 @@ cfs::hal::rpi::RpiUART::send(const std::vector<uint8_t> &buffer)
     }
 
     ::tcflush(FileDescriptor::operator(), TCIFLUSH);
-}
+   }
+ */
 

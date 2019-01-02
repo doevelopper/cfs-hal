@@ -1,21 +1,28 @@
 
 
-#ifndef CFS_HAL_UART_HPP
-#define CFS_HAL_UART_HPP
+#ifndef CFS_HAL_NETWORK_SERIAL_UART_HPP
+#define CFS_HAL_NETWORK_SERIAL_UART_HPP
 
 #include <cstdlib>
 #include <cstdint>
 #include <cstring>
 
+#include <memory>
 #include <chrono>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <termios.h>
 
-namespace cfs::hal
+namespace cfs::hal::network::serial
 {
+    class UartDevice;
+
     /*!
      * @brief The SerialConfig struct for serial attributes
      */
@@ -23,7 +30,7 @@ namespace cfs::hal
     {
         int baud_rate;
         int data_bits;
-        ::UartParity parity;
+        //::UartParity parity;
         int timeout_value_in_usec;
     };
 
@@ -84,10 +91,11 @@ namespace cfs::hal
             AUART_PARITY_MARK = 3, /**< Mark parity, always 1 */
             AUART_PARITY_SPACE = 4 /**< Space parity, always 0 */
         };
+
         /*!
          * Modem control lines.
          */
-        enum class UartModemControlLine : std::uint8_t
+        enum class UartModemControlLine : std::uint32_t
         {
             AUART_MODEM_CONTROL_LE = 1 << 0,      /**< Data set ready/Line enable */
                 AUART_MODEM_CONTROL_DTR = 1 << 1, /**< Data terminal ready */
@@ -99,25 +107,21 @@ namespace cfs::hal
                 AUART_MODEM_CONTROL_RI = 1 << 7,  /**< Ring */
                 AUART_MODEM_CONTROL_DSR = 1 << 8  /**< Data set ready */
         };
+
         /*!
          * Hardware Flow Control
          */
         enum class UartHardwareFlowControl : std::uint8_t
         {
-            AUART_HARDWARE_FLOW_CONTROL_NONE = 0,                                                 /**< No hardware flow
-                                                                                                     control */
-            AUART_HARDWARE_FLOW_CONTROL_AUTO_RTSCTS = 1                                           /**< Auto RTS/CTS */
-                                                      AUART_HARDWARE_FLOW_CONTROL_XONXOFF         /** Software flow
-                                                                                                     control (XON/XOFF).
-                                                                                                   */
-                                                      AUART_HARDWARE_FLOW_CONTROL_RTSCTS_XONXOFF, /** Hardware flow
-                                                                                                     control (RTS/CTS).
-                                                                                                   */
+            UART_HARDWARE_FLOW_CONTROL_NONE = 0,        /**< No hardware flow control */
+            UART_HARDWARE_FLOW_CONTROL_AUTO_RTSCTS = 1, /**< Auto RTS/CTS */
+            UART_HARDWARE_FLOW_CONTROL_XONXOFF,         /** Software flow control (XON/XOFF).*/
+            UART_HARDWARE_FLOW_CONTROL_RTSCTS_XONXOFF,  /** Hardware flow control (RTS/CTS).*/
         };
+
         /*!
          * Flush queue selection
          */
-
         enum class UartFlushDirection : std::uint8_t
         {
             AUART_FLUSH_IN = 0,    /**< Flushes data received but not read */
@@ -127,14 +131,14 @@ namespace cfs::hal
 
         public:
 
-            Uart();
+            Uart() = delete;
             Uart(const std::string & filename,
-                 const UartUartBaudRate & baudRate = BAUDRATE_9600BPS,
-                 const UartDataBits & dataBits = DATABITS_8BITS,
-                 const UartHardwareFlowControl & flowControl = FLOWCONTROL_OFF,
-                 const UartParity & parity = AUART_PARITY_NONE,
-                 const UartStopBits & stopBits = STOPBITS_1BIT,
-                 const int& flags = O_RDWR | O_NONBLOCK | O_NOCTTY);
+                 const UartBaudRate & baudRate = UartBaudRate::BAUDRATE_9600BPS,
+                 const UartDataBits & dataBits = UartDataBits::DATABITS_8BITS,
+                 const UartHardwareFlowControl & flowControl = UartHardwareFlowControl::UART_HARDWARE_FLOW_CONTROL_NONE,
+                 const UartParity & parity = UartParity::AUART_PARITY_NONE,
+                 const UartStopBits & stopBits = UartStopBits::STOPBITS_1BIT,
+                 const std::int8_t & flags = O_RDWR | O_NONBLOCK | O_NOCTTY);
             Uart(const std::string& path, std::uint32_t baudrate, UartDataBits databits, UartParity parity, UartStopBits
                  stopbits, UartHardwareFlowControl handshake);
             Uart(const std::string& path, std::uint32_t baudrate, UartDataBits databits, UartParity parity, UartStopBits
@@ -144,7 +148,8 @@ namespace cfs::hal
             Uart(Uart&& orig) = delete;
             Uart & operator=(const Uart& orig) = delete;
             Uart & operator=(Uart && orig) = delete;
-            virtual ~Uart() = default;
+            virtual ~Uart();
+
             /*!
              * @brief Receive : Read data on serial bus
              * @param size : amount of data to be read
@@ -164,6 +169,7 @@ namespace cfs::hal
              * @param level : 0 to disable rts , 1 to enable rts
              */
             virtual void setRts(int level) = 0;
+
             /*!
              * @brief Writes to a UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -175,7 +181,6 @@ namespace cfs::hal
              */
             int write(const UartDevice* device, const void* data, std::uint32_t len, std::uint32_t* bytes_written);
 
-
             /*!
              * @brief Reads from a UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -186,6 +191,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int read(const UartDevice* device, void* data, std::uint32_t len, std::uint32_t* bytes_read);
+
             /*!
              * @brief Sets the input and output speed of a UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -194,6 +200,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int setBaudrate(const UartDevice* device, std::uint32_t baudrate);
+
             /*!
              * @brief Sets number of stop bits for the UART device.
              * @param[out]device Pointer to the AUartDevice struct.
@@ -202,6 +209,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int setStopBits(const UartDevice* device, std::uint32_t stop_bits);
+
             /*!
              * @brief Sets the data size of a character for the UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -210,6 +218,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int setDataSize(const UartDevice* device, std::uint32_t data_size);
+
             /*!
              * @brief Sets the parity mode for the UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -218,6 +227,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int setParity(const UartDevice* device, UartParity mode);
+
             /*!
              * @brief Sets the hardware flow control mode for the UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -226,6 +236,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int setHardwareFlowControl(const UartDevice* device, UartHardwareFlowControl mode);
+
             /*!
              * @brief Sets the modem control bits for the UART device.
              * @param[out] device Pointer to the UartDevice struct.
@@ -233,7 +244,8 @@ namespace cfs::hal
              * @retval  0: Success
              * @retval  n: errno Error
              */
-            int setModemControl(const AUartDevice* device, std::uint32_t lines);
+            int setModemControl(const UartDevice* device, std::uint32_t lines);
+
             /*!
              * @brief Clears the modem control bits for the UART device.
              * @param[out] device Pointer to the UartDevice struct.
@@ -242,6 +254,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int clearModemControl(const UartDevice* device, std::uint32_t lines);
+
             /*!
              * @brief Sends a break to the UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -252,6 +265,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int sendBreak(const UartDevice* device, std::uint32_t duration_msecs);
+
             /*!
              * @brief Flushes specified queue for the UART device.
              * @param[out] device Pointer to the AUartDevice struct.
@@ -260,6 +274,7 @@ namespace cfs::hal
              * @retval  n: errno Error
              */
             int flush(const UartDevice* device, UartFlushDirection direction);
+
             /*!
              * @brief Gets a file descriptor to be notified when data can be read.
              *        You can use this file descriptor to poll on incoming data instead of
@@ -289,14 +304,14 @@ namespace cfs::hal
         private:
 
             UartStopBits m_stopBits;
-            struct termios m_current;
             std::string m_filename;
             std::int8_t m_flags;
             UartHardwareFlowControl m_flowControl;
             UartParity m_parity;
             UartDataBits m_dataBits;
             struct termios m_restore;
-            std::uint32_t m_fd;
+            struct termios m_current;
+            std::uint32_t m_filed;
     };
     /*
      * @}

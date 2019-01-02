@@ -71,3 +71,41 @@ std::int32_t FileDescriptor::fileDescriptorOperations(std::int32_t command, stru
     return result;
 }
 
+std::size_t FileDescriptor::read(char *buffer, std::size_t size) const
+{
+    auto n = ::read(m_fileDescriptor, buffer, size);
+    //if (n < 0)
+    //throw system_error(message, "read()");
+
+    return static_cast<std::size_t>(n);
+}
+
+std::size_t FileDescriptor::write(const char *buffer, std::size_t size) const
+{
+    auto n = ::write(m_fileDescriptor, buffer, size);
+    //if (n < 0)
+    //throw system_error(message, "write()");
+
+    return static_cast<std::size_t>(n);
+}
+
+std::size_t FileDescriptor::pread(char *buffer, std::size_t size, std::size_t off) const
+{
+    auto n = ::pread(m_fileDescriptor, buffer, size, static_cast<off_t>(off));
+    //if (n < 0)
+    //throw system_error(message, "pread()");
+
+    return static_cast<std::size_t>(n);
+}
+
+std::size_t FileDescriptor::pwrite(const char *buffer,
+                                   std::size_t size,
+                                   std::size_t off) const
+{
+    auto n = ::pwrite(m_fileDescriptor, buffer, size, static_cast<off_t>(off));
+    //if (n < 0)
+    //throw system_error(message, "pwrite()");
+
+    return static_cast<std::size_t>(n);
+}
+

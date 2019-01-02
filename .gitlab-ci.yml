@@ -69,6 +69,7 @@ validate:
            fi
     after_script:
         - echo "${BUILD_DIRECTORY} directory created"
+
     artifacts:
         name: "${CI_BUILD_NAME}"
         expire_in: 2 hrs

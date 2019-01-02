@@ -23,17 +23,21 @@ namespace cfs::hal
 
             inline operator int() const
             {
-                return m_fileDescriptor;
+                return (m_fileDescriptor);
             }
 
             std::int32_t fileDescriptor()
             {
-                return m_fileDescriptor;
+                return (m_fileDescriptor);
             }
 
             std::int32_t fileDescriptorOperations(std::int32_t command);
             std::int32_t fileDescriptorOperations(std::int32_t command, std::uint8_t arguments);
             std::int32_t fileDescriptorOperations(std::int32_t command, struct flock * fileLocking);
+            std::size_t read(char *buffer, std::size_t size) const;
+            std::size_t write(const char *buffer, std::size_t size) const;
+            std::size_t pread(char *buffer, std::size_t size, std::size_t off) const;
+            std::size_t pwrite(const char *buffer, std::size_t size, std::size_t off) const;
             bool isInUse() const;
 
         private:
