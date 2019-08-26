@@ -27,10 +27,10 @@ namespace cfs::hal
             CharacterDevice & operator=(CharacterDevice && orig) = default;
             virtual ~CharacterDevice() = default;
 
-    bool poll(std::chrono::milliseconds timeout) const;
-    void flush() const;
-    unsigned int input() const;
-    unsigned int output() const;
+            bool poll(std::chrono::milliseconds timeout) const;
+            void flush() const;
+            unsigned int input() const;
+            unsigned int output() const;
 
         private:
     };
